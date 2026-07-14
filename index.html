@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ExperTwin — Knowledge Transfer MVP</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">ET</div>
+        <div>
+          <h1>ExperTwin</h1>
+          <p></p>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-link active" data-section="dashboard">Dashboard</button>
+        <button class="nav-link" data-section="capture">Capture Knowledge</button>
+        <button class="nav-link" data-section="library">Knowledge Library</button>
+        <button class="nav-link" data-section="ask">Ask System</button>
+        <button class="nav-link" data-section="gaps">Knowledge Gaps</button>
+        <button class="nav-link" data-section="profiles">Profiles</button>
+        <button class="nav-link" data-section="tree">Knowledge Tree</button>
+        <button class="nav-link" data-section="profile">My Profile</button>
+        <button class="nav-link" data-section="team">Team</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <p>Prototype version</p>
+        <span>Local demo only</span>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main">
+      <!-- Top bar -->
+      <header class="topbar">
+        <div>
+          <h2 id="pageTitle">Dashboard</h2>
+          <p id="pageSubtitle">Preserve expert knowledge before it disappears.</p>
+        </div>
+
+        <div class="auth-cluster">
+          <div class="user-pill hidden" id="userPill">
+            <span class="user-avatar" id="userAvatar">--</span>
+            <div class="user-info">
+              <strong id="userName">User</strong>
+              <span id="userRole">Role</span>
+            </div>
+            <button class="logout-btn" id="logoutBtn">Logout</button>
+          </div>
+
+          <button class="login-btn" id="loginBtn">Login</button>
+        </div>
+      </header>
+
+      <!-- Dashboard -->
+      <section class="page-section active" id="dashboard">
+        <div class="hero-card">
+          <div>
+            <span class="eyebrow">Organizational Memory</span>
+            <h3>Turn senior expertise into reusable decision support.</h3>
+            <p>
+              ExperTwin helps organizations capture practical know-how from experienced employees,
+              structure it, and make it accessible to junior staff when they need guidance.
+            </p>
+            <div class="hero-actions">
+              <button class="primary-btn" data-go="capture">Start Capturing</button>
+              <button class="secondary-btn" data-go="library">View Library</button>
+            </div>
+          </div>
+
+          <div class="hero-panel">
+            <div class="metric">
+              <strong id="totalKnowledgeItems">0</strong>
+              <span>Knowledge items</span>
+            </div>
+            <div class="metric">
+              <strong id="seniorCount">3</strong>
+              <span>Senior experts</span>
+            </div>
+            <div class="metric">
+              <strong id="juniorCount">3</strong>
+              <span>Junior employees</span>
+            </div>
+            <div class="metric">
+              <strong>3</strong>
+              <span>High-risk gaps</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid three-col">
+          <article class="card">
+            <div class="icon-circle">🎙️</div>
+            <h4>Capture</h4>
+            <p>Use guided prompts to extract practical experience from senior employees.</p>
+          </article>
+
+          <article class="card">
+            <div class="icon-circle">🧠</div>
+            <h4>Structure</h4>
+            <p>Convert raw answers into categorized knowledge cards with context and source notes.</p>
+          </article>
+
+          <article class="card">
+            <div class="icon-circle">🔎</div>
+            <h4>Retrieve</h4>
+            <p>Let juniors search or ask questions and receive source-backed guidance.</p>
+          </article>
+        </div>
+
+        <div class="workflow-card">
+          <h3>How the system works</h3>
+          <div class="workflow">
+            <div class="workflow-step">
+              <span>1</span>
+              <h4>Interview expert</h4>
+              <p>Senior employees answer short, targeted prompts.</p>
+            </div>
+            <div class="workflow-line"></div>
+            <div class="workflow-step">
+              <span>2</span>
+              <h4>Extract decisions</h4>
+              <p>The system identifies procedures, warnings, exceptions, and judgment calls.</p>
+            </div>
+            <div class="workflow-line"></div>
+            <div class="workflow-step">
+              <span>3</span>
+              <h4>Support juniors</h4>
+              <p>Newer employees retrieve practical guidance when facing similar problems.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Capture Knowledge -->
+      <section class="page-section" id="capture">
+        <div class="section-header">
+          <h3>Capture Knowledge</h3>
+          <p>
+            This form simulates how the product would collect tacit knowledge from experienced employees.
+          </p>
+        </div>
+
+        <form id="knowledgeForm" class="form-card">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="expertName">Expert name</label>
+              <input type="text" id="expertName" placeholder="e.g. Senior maintenance engineer" required />
+            </div>
+
+            <div class="form-group">
+              <label for="domain">Knowledge domain</label>
+              <select id="domain" required>
+                <option value="">Select domain</option>
+                <option value="Operations">Operations</option>
+                <option value="Maintenance">Maintenance</option>
+                <option value="Safety">Safety</option>
+                <option value="Engineering">Engineering</option>
+                <option value="Onboarding">Onboarding</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="riskLevel">Risk level</label>
+              <select id="riskLevel" required>
+                <option value="">Select risk level</option>
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+                <option value="Critical">Critical</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="situation">Situation or problem</label>
+              <input type="text" id="situation" placeholder="e.g. Pump pressure drops unexpectedly" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="officialProcedure">What does the official procedure say?</label>
+            <textarea id="officialProcedure" placeholder="Describe the formal documented process..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="realWorldAdvice">What does the expert actually do in practice?</label>
+            <textarea id="realWorldAdvice" placeholder="Capture the practical workaround, warning, or judgment call..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="warningSigns">What warning signs should juniors notice?</label>
+            <textarea id="warningSigns" placeholder="List early signs, unusual symptoms, or patterns..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="mistakes">What mistakes do inexperienced employees usually make?</label>
+            <textarea id="mistakes" placeholder="Describe common errors and why they happen..." required></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="primary-btn">Save Knowledge Item</button>
+            <button type="reset" class="secondary-btn">Clear Form</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Knowledge Library -->
+      <section class="page-section" id="library">
+        <div class="section-header">
+          <h3>Knowledge Library</h3>
+          <p>Search and browse captured expertise.</p>
+        </div>
+
+        <div class="toolbar">
+          <input type="text" id="searchInput" placeholder="Search by problem, domain, advice, or expert..." />
+
+          <select id="domainFilter">
+            <option value="All">All domains</option>
+            <option value="Operations">Operations</option>
+            <option value="Maintenance">Maintenance</option>
+            <option value="Safety">Safety</option>
+            <option value="Engineering">Engineering</option>
+            <option value="Onboarding">Onboarding</option>
+          </select>
+        </div>
+
+        <div id="knowledgeList" class="knowledge-list"></div>
+      </section>
+
+      <!-- Ask System -->
+      <section class="page-section" id="ask">
+        <div class="section-header">
+          <h3>Ask System</h3>
+          <p>
+            This is a mock AI interface. For now, it searches the local knowledge library and returns
+            source-style answers.
+          </p>
+        </div>
+
+        <div class="ask-layout">
+          <div class="ask-card">
+            <label for="questionInput">Ask a workplace knowledge question</label>
+            <textarea
+              id="questionInput"
+              placeholder="Example: What should I check if pump pressure drops suddenly?"
+            ></textarea>
+
+            <button class="primary-btn" id="askBtn">Generate Answer</button>
+          </div>
+
+          <div class="answer-card">
+            <h4>System Answer</h4>
+            <div id="answerBox" class="answer-box">
+              <p class="muted">Ask a question to see a source-backed response.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Knowledge Gaps -->
+      <section class="page-section" id="gaps">
+        <div class="section-header">
+          <h3>Knowledge Gaps</h3>
+          <p>
+            This view shows where expertise is missing, under-documented, or concentrated in too few people.
+          </p>
+        </div>
+
+        <div class="gap-grid">
+          <article class="gap-card high">
+            <div>
+              <h4>Critical equipment troubleshooting</h4>
+              <p>Only one senior employee currently knows the non-standard failure patterns.</p>
+            </div>
+            <span>High risk</span>
+          </article>
+
+          <article class="gap-card medium">
+            <div>
+              <h4>Safety exception handling</h4>
+              <p>Informal rules exist, but they are not documented in the official procedure.</p>
+            </div>
+            <span>Medium risk</span>
+          </article>
+
+          <article class="gap-card high">
+            <div>
+              <h4>Onboarding practical judgment</h4>
+              <p>New employees know the manuals but not the real-world shortcuts and warning signs.</p>
+            </div>
+            <span>High risk</span>
+          </article>
+
+          <article class="gap-card low">
+            <div>
+              <h4>Routine maintenance checklist</h4>
+              <p>Existing documentation is clear and regularly updated.</p>
+            </div>
+            <span>Low risk</span>
+          </article>
+        </div>
+      </section>
+
+      <!-- Profiles -->
+      <section class="page-section" id="profiles">
+        <div class="section-header">
+          <h3>Employee Profiles</h3>
+          <p id="profilesSubtitle">
+            Senior experts contribute knowledge. Junior employees consume it.
+            Each profile type is designed around its relationship to expertise.
+          </p>
+        </div>
+
+        <div class="profile-self-banner hidden" id="profileSelfBanner">
+          You are viewing your own profile. The toggle is hidden because your role is fixed.
+        </div>
+
+        <div class="profile-toggle" id="profileToggle">
+          <button class="toggle-btn active" data-role="senior">Senior Experts</button>
+          <button class="toggle-btn" data-role="junior">Junior Employees</button>
+        </div>
+
+        <div id="profileGrid" class="profile-grid"></div>
+      </section>
+
+      <!-- Knowledge Tree (Visual Bookshelf Metaphor) -->
+      <section class="page-section" id="tree">
+        <div class="section-header">
+          <h3>Knowledge Tree</h3>
+          <p>
+            A visual representation of captured expertise. Domains form the branches, and individual knowledge items are the books resting on them.
+          </p>
+        </div>
+        <div id="knowledgeTree" class="tree-container"></div>
+      </section>
+
+      <!-- My Profile -->
+      <section class="page-section" id="profile">
+        <div class="section-header">
+          <h3>My Profile</h3>
+          <p>Your personal workspace: calendar, tasks, team, projects, and team progress.</p>
+        </div>
+
+        <div id="profileContent" class="workspace-grid"></div>
+      </section>
+
+      <!-- Team -->
+      <section class="page-section" id="team">
+        <div class="section-header">
+          <h3>Team</h3>
+          <p>Teammates, roles, shared knowledge-transfer tasks, shared-task progress, and communication.</p>
+        </div>
+
+        <div id="teamContent" class="workspace-grid"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Login Modal -->
+  <div class="modal-backdrop hidden" id="loginModal">
+    <div class="modal" role="dialog" aria-labelledby="loginTitle">
+      <div class="modal-header">
+        <h3 id="loginTitle">Sign in to ExperTwin</h3>
+        <button class="modal-close" id="modalCloseBtn" aria-label="Close">&times;</button>
+      </div>
+
+      <form class="modal-form" id="loginForm">
+        <div class="form-group">
+          <label>I am a</label>
+          <div class="role-selector" id="roleSelector">
+            <button type="button" class="role-option active" data-role="senior">Senior Expert</button>
+            <button type="button" class="role-option" data-role="junior">Junior Employee</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="loginUsername">Username</label>
+          <input type="text" id="loginUsername" placeholder="e.g. henrik.laine" required autocomplete="username" />
+        </div>
+
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" placeholder="Enter your password" required autocomplete="current-password" />
+        </div>
+
+        <div class="modal-error hidden" id="loginError"></div>
+
+        <div class="modal-hint">
+          <strong>Demo accounts</strong> (password: <code>demo1234</code>):<br />
+          <code>henrik.laine</code>, <code>marja.korhonen</code>, <code>timo.virtanen</code><br />
+          <code>aino.makela</code>, <code>elias.nurmi</code>, <code>sofia.jarvinen</code>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="primary-btn">Sign In</button>
+          <button type="button" class="secondary-btn" id="loginCancelBtn">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Floating Ask button -->
+  <button class="floating-ask" id="floatingAskBtn" aria-label="Go to Ask System">Ask</button>
+
+  <script src="app.js"></script>
+</body>
+</html>
