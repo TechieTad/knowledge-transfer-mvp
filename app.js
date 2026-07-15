@@ -81,6 +81,9 @@ const sections = document.querySelectorAll(".page-section");
 const pageTitle = document.getElementById("pageTitle");
 const pageSubtitle = document.getElementById("pageSubtitle");
 
+const knowledgeGroup = document.getElementById("knowledgeGroup");
+const knowledgeParent = document.getElementById("knowledgeParent");
+
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const userPill = document.getElementById("userPill");
@@ -102,6 +105,18 @@ const profileSelfBanner = document.getElementById("profileSelfBanner");
 const profileToggle = document.getElementById("profileToggle");
 const profilesSubtitle = document.getElementById("profilesSubtitle");
 
+const floatingAskBtn = document.getElementById("floatingAskBtn");
+const chatWindow = document.getElementById("chatWindow");
+const chatHeader = document.getElementById("chatHeader");
+const chatMessages = document.getElementById("chatMessages");
+const chatInput = document.getElementById("chatInput");
+const chatSendBtn = document.getElementById("chatSendBtn");
+const chatMaxBtn = document.getElementById("chatMaxBtn");
+const chatCloseBtn = document.getElementById("chatCloseBtn");
+const chatResizeHandle = document.getElementById("chatResizeHandle");
+
+const KNOWLEDGE_SECTIONS = ["capture", "library", "gaps", "tree"];
+
 const titles = {
   dashboard: { title: "Dashboard", subtitle: "Preserve expert knowledge before it disappears." },
   capture: { title: "Capture Knowledge", subtitle: "Extract practical know-how from experienced employees." },
@@ -111,7 +126,7 @@ const titles = {
   profiles: { title: "Employee Profiles", subtitle: "View senior experts and junior employees." },
   tree: { title: "Knowledge Tree", subtitle: "Visual representation of expertise. Domains are branches; items are books." },
   profile: { title: "My Profile", subtitle: "Your personal workspace: calendar, tasks, team, projects, and team progress." },
-  team: { title: "Team", subtitle: "Teammates, roles, shared tasks, shared-task progress, and communication." }
+  team: { title: "Team", subtitle: "Teammates, roles, shared tasks, shared-task progress, communication, and employee profiles." }
 };
 
 // -----------------------------------------------
@@ -200,7 +215,7 @@ function handleLogin(event) {
   const account = accounts.find(a => a.username.toLowerCase() === username && a.password === password);
 
   if (!account) { loginError.textContent = "Invalid username or password."; loginError.classList.remove("hidden"); return; }
-  
+
   const profile = defaultProfiles.find(p => p.id === account.profileId);
   if (!profile) { loginError.textContent = "Account not linked to profile."; loginError.classList.remove("hidden"); return; }
   if (profile.role !== selectedLoginRole) { loginError.textContent = `Select the correct role for this account.`; loginError.classList.remove("hidden"); return; }
@@ -230,24 +245,37 @@ roleOptions.forEach(opt => opt.addEventListener("click", () => setLoginRole(opt.
 function switchSection(sectionId) {
   sections.forEach(section => section.classList.toggle("active", section.id === sectionId));
   navLinks.forEach(link => link.classList.toggle("active", link.dataset.section === sectionId));
-  pageTitle.textContent = titles[sectionId].title;
-  pageSubtitle.textContent = titles[sectionId].subtitle;
 
-  const floatingAskBtn = document.getElementById("floatingAskBtn");
-  if (floatingAskBtn) floatingAskBtn.classList.toggle("active", sectionId === "ask");
+  const t = titles[sectionId];
+  if (t) {
+    pageTitle.textContent = t.title;
+    pageSubtitle.textContent = t.subtitle;
+  }
+
+  // Knowledge dropdown: keep open for knowledge sub-sections, collapse otherwise
+  const isKnowledgeSection = KNOWLEDGE_SECTIONS.includes(sectionId);
+  if (knowledgeGroup) {
+    knowledgeGroup.classList.toggle("open", isKnowledgeSection);
+    knowledgeParent.classList.toggle("active", isKnowledgeSection);
+    knowledgeParent.setAttribute("aria-expanded", String(isKnowledgeSection));
+  }
 
   if (sectionId === "library") renderKnowledgeList();
   if (sectionId === "dashboard") updateDashboardMetrics();
-  if (sectionId === "profiles") renderProfiles();
   if (sectionId === "tree") renderKnowledgeTree();
   if (sectionId === "profile") renderProfile();
-  if (sectionId === "team") renderTeam();
+  if (sectionId === "team") { renderTeam(); renderProfiles(); }
 }
 
 navLinks.forEach(link => link.addEventListener("click", () => switchSection(link.dataset.section)));
 document.querySelectorAll("[data-go]").forEach(button => button.addEventListener("click", () => switchSection(button.dataset.go)));
 document.getElementById("quickCaptureBtn")?.addEventListener("click", () => switchSection("capture"));
-document.getElementById("floatingAskBtn").addEventListener("click", () => switchSection("ask"));
+
+// Knowledge dropdown parent toggles open/closed without navigating
+knowledgeParent.addEventListener("click", () => {
+  const nowOpen = knowledgeGroup.classList.toggle("open");
+  knowledgeParent.setAttribute("aria-expanded", String(nowOpen));
+});
 
 // -----------------------------------------------
 // Capture form
@@ -336,34 +364,8 @@ function deleteKnowledgeItem(id) {
 }
 
 // -----------------------------------------------
-// Ask System
+// Ask System (knowledge retrieval — used by the floating chat)
 // -----------------------------------------------
-
-const askBtn = document.getElementById("askBtn");
-const questionInput = document.getElementById("questionInput");
-const answerBox = document.getElementById("answerBox");
-
-askBtn.addEventListener("click", () => {
-  const question = questionInput.value.toLowerCase().trim();
-  if (!question) { answerBox.innerHTML = `<p class="muted">Please enter a question first.</p>`; return; }
-
-  const relevantItems = findRelevantKnowledge(question);
-  if (relevantItems.length === 0) {
-    answerBox.innerHTML = `<p>I could not find a strong match.</p><div class="answer-source"><strong>Suggested next step:</strong> Capture knowledge from a senior expert about this topic.</div>`;
-    return;
-  }
-
-  const topItem = relevantItems[0];
-  answerBox.innerHTML = `
-    <h5>Suggested guidance</h5>
-    <p>Based on captured expert knowledge, the most relevant situation is: <strong>${escapeHTML(topItem.situation)}</strong></p>
-    <ul>
-      <li><strong>First check:</strong> ${escapeHTML(topItem.warningSigns)}</li>
-      <li><strong>Expert advice:</strong> ${escapeHTML(topItem.realWorldAdvice)}</li>
-      <li><strong>Avoid this mistake:</strong> ${escapeHTML(topItem.mistakes)}</li>
-    </ul>
-    <div class="answer-source"><strong>Source:</strong> ${escapeHTML(topItem.expertName)} · ${escapeHTML(topItem.domain)} · ${escapeHTML(topItem.riskLevel)} risk</div>`;
-});
 
 function findRelevantKnowledge(question) {
   const questionWords = question.split(/\s+/).map(word => word.replace(/[^\w]/g, "")).filter(word => word.length > 2);
@@ -374,8 +376,267 @@ function findRelevantKnowledge(question) {
   }).filter(item => item.score > 0).sort((a, b) => b.score - a.score);
 }
 
+function buildChatAnswerHTML(rawQuestion) {
+  const question = rawQuestion.toLowerCase().trim();
+  const relevantItems = findRelevantKnowledge(question);
+  if (relevantItems.length === 0) {
+    return `<p>I could not find a strong match.</p><div class="answer-source"><strong>Suggested next step:</strong> Capture knowledge from a senior expert about this topic.</div>`;
+  }
+  const topItem = relevantItems[0];
+  return `
+    <h5>Suggested guidance</h5>
+    <p>Based on captured expert knowledge, the most relevant situation is: <strong>${escapeHTML(topItem.situation)}</strong></p>
+    <ul>
+      <li><strong>First check:</strong> ${escapeHTML(topItem.warningSigns)}</li>
+      <li><strong>Expert advice:</strong> ${escapeHTML(topItem.realWorldAdvice)}</li>
+      <li><strong>Avoid this mistake:</strong> ${escapeHTML(topItem.mistakes)}</li>
+    </ul>
+    <div class="answer-source"><strong>Source:</strong> ${escapeHTML(topItem.expertName)} · ${escapeHTML(topItem.domain)} · ${escapeHTML(topItem.riskLevel)} risk</div>`;
+}
+
 // -----------------------------------------------
-// Profiles
+// Floating Chat Window ("Ask ExperTwin")
+// -----------------------------------------------
+
+const CHAT_HISTORY_KEY = "expertwinChatHistory";
+const ASK_BTN_POS_KEY = "expertwinAskBtnPos";
+
+let chatHistory = loadChatHistory();
+let chatInitialized = false;
+let chatMaximized = false;
+let chatPrevRect = null;
+
+function loadChatHistory() {
+  const saved = localStorage.getItem(CHAT_HISTORY_KEY);
+  if (!saved) return [];
+  try { return JSON.parse(saved); } catch { return []; }
+}
+
+function saveChatHistory() {
+  localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(chatHistory));
+}
+
+function renderChatMessages() {
+  if (chatHistory.length === 0) {
+    chatMessages.innerHTML = `<p class="chat-empty">Ask a workplace knowledge question to get source-backed guidance from the knowledge library.</p>`;
+    return;
+  }
+  chatMessages.innerHTML = chatHistory.map(msg => {
+    if (msg.role === "user") return `<div class="chat-msg user">${escapeHTML(msg.text)}</div>`;
+    return `<div class="chat-msg assistant">${msg.html}</div>`;
+  }).join("");
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function sendChatMessage() {
+  const text = chatInput.value.trim();
+  if (!text) return;
+  chatHistory.push({ role: "user", text, at: new Date().toISOString() });
+  chatHistory.push({ role: "assistant", html: buildChatAnswerHTML(text), at: new Date().toISOString() });
+  saveChatHistory();
+  chatInput.value = "";
+  renderChatMessages();
+}
+
+function setChatRect(left, top, width, height) {
+  chatWindow.style.left = `${left}px`;
+  chatWindow.style.top = `${top}px`;
+  chatWindow.style.width = `${width}px`;
+  chatWindow.style.height = `${height}px`;
+  chatWindow.style.right = "auto";
+  chatWindow.style.bottom = "auto";
+}
+
+function setDefaultChatRect() {
+  // ~10% of viewport width, roughly square, anchored bottom-right.
+  const w = Math.max(Math.round(window.innerWidth * 0.10), 240);
+  const h = Math.min(Math.round(w * 1.1), window.innerHeight - 40);
+  const left = Math.max(window.innerWidth - w - 24, 0);
+  const top = Math.max(window.innerHeight - h - 24, 0);
+  setChatRect(left, top, w, h);
+}
+
+function openChatWindow() {
+  if (!chatInitialized) { setDefaultChatRect(); chatInitialized = true; }
+  chatWindow.classList.remove("hidden");
+  floatingAskBtn.classList.add("hidden");
+  renderChatMessages();
+  setTimeout(() => chatInput.focus(), 50);
+}
+
+function closeChatWindow() {
+  chatWindow.classList.add("hidden");
+  floatingAskBtn.classList.remove("hidden");
+}
+
+// Global alias used by profile-card buttons
+function openAskChat() { openChatWindow(); }
+
+function toggleChatMaximize() {
+  if (!chatMaximized) {
+    const r = chatWindow.getBoundingClientRect();
+    chatPrevRect = { left: r.left, top: r.top, width: r.width, height: r.height };
+    setChatRect(0, 0, window.innerWidth, window.innerHeight);
+    chatWindow.classList.add("maximized");
+    chatMaximized = true;
+    chatMaxBtn.textContent = "❐";
+    chatMaxBtn.title = "Restore";
+    chatMaxBtn.setAttribute("aria-label", "Restore");
+  } else {
+    if (chatPrevRect) setChatRect(chatPrevRect.left, chatPrevRect.top, chatPrevRect.width, chatPrevRect.height);
+    else setDefaultChatRect();
+    chatWindow.classList.remove("maximized");
+    chatMaximized = false;
+    chatMaxBtn.textContent = "⛶";
+    chatMaxBtn.title = "Maximize";
+    chatMaxBtn.setAttribute("aria-label", "Maximize");
+  }
+}
+
+chatSendBtn.addEventListener("click", sendChatMessage);
+chatInput.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); sendChatMessage(); } });
+chatCloseBtn.addEventListener("click", closeChatWindow);
+chatMaxBtn.addEventListener("click", toggleChatMaximize);
+
+// --- Chat window drag (by header) ---
+(function initChatDrag() {
+  let dragging = false, startX = 0, startY = 0, origLeft = 0, origTop = 0;
+
+  chatHeader.addEventListener("pointerdown", e => {
+    if (e.target.closest("button")) return;
+    if (chatMaximized) return;
+    dragging = true;
+    startX = e.clientX; startY = e.clientY;
+    const r = chatWindow.getBoundingClientRect();
+    origLeft = r.left; origTop = r.top;
+    chatHeader.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+
+  chatHeader.addEventListener("pointermove", e => {
+    if (!dragging) return;
+    const r = chatWindow.getBoundingClientRect();
+    let left = origLeft + (e.clientX - startX);
+    let top = origTop + (e.clientY - startY);
+    left = Math.min(Math.max(left, -r.width + 60), window.innerWidth - 60);
+    top = Math.min(Math.max(top, 0), window.innerHeight - 40);
+    chatWindow.style.left = `${left}px`;
+    chatWindow.style.top = `${top}px`;
+    chatWindow.style.right = "auto";
+    chatWindow.style.bottom = "auto";
+  });
+
+  const stop = () => { dragging = false; };
+  chatHeader.addEventListener("pointerup", stop);
+  chatHeader.addEventListener("pointercancel", stop);
+})();
+
+// --- Chat window resize (bottom-right handle) ---
+(function initChatResize() {
+  let resizing = false, startX = 0, startY = 0, origW = 0, origH = 0;
+
+  chatResizeHandle.addEventListener("pointerdown", e => {
+    if (chatMaximized) return;
+    resizing = true;
+    startX = e.clientX; startY = e.clientY;
+    const r = chatWindow.getBoundingClientRect();
+    origW = r.width; origH = r.height;
+    // Pin position so resizing grows from the top-left anchor
+    setChatRect(r.left, r.top, r.width, r.height);
+    chatResizeHandle.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+
+  chatResizeHandle.addEventListener("pointermove", e => {
+    if (!resizing) return;
+    const r = chatWindow.getBoundingClientRect();
+    let w = origW + (e.clientX - startX);
+    let h = origH + (e.clientY - startY);
+    w = Math.min(Math.max(w, 220), window.innerWidth - r.left);
+    h = Math.min(Math.max(h, 220), window.innerHeight - r.top);
+    chatWindow.style.width = `${w}px`;
+    chatWindow.style.height = `${h}px`;
+  });
+
+  const stop = () => { resizing = false; };
+  chatResizeHandle.addEventListener("pointerup", stop);
+  chatResizeHandle.addEventListener("pointercancel", stop);
+})();
+
+// -----------------------------------------------
+// Draggable floating Ask button
+// -----------------------------------------------
+
+(function initDraggableAskBtn() {
+  function applyAskBtnPos(left, top) {
+    const w = floatingAskBtn.offsetWidth || 72;
+    const h = floatingAskBtn.offsetHeight || 72;
+    left = Math.min(Math.max(left, 0), window.innerWidth - w);
+    top = Math.min(Math.max(top, 0), window.innerHeight - h);
+    floatingAskBtn.style.left = `${left}px`;
+    floatingAskBtn.style.top = `${top}px`;
+    floatingAskBtn.style.right = "auto";
+    floatingAskBtn.style.bottom = "auto";
+    return { left, top };
+  }
+
+  // Restore saved position
+  const saved = localStorage.getItem(ASK_BTN_POS_KEY);
+  if (saved) {
+    try {
+      const p = JSON.parse(saved);
+      if (typeof p.left === "number" && typeof p.top === "number") applyAskBtnPos(p.left, p.top);
+    } catch { /* ignore corrupt data */ }
+  }
+
+  let dragging = false, moved = false;
+  let startX = 0, startY = 0, origLeft = 0, origTop = 0;
+
+  floatingAskBtn.addEventListener("pointerdown", e => {
+    dragging = true;
+    moved = false;
+    startX = e.clientX; startY = e.clientY;
+    const r = floatingAskBtn.getBoundingClientRect();
+    origLeft = r.left; origTop = r.top;
+    floatingAskBtn.setPointerCapture(e.pointerId);
+  });
+
+  floatingAskBtn.addEventListener("pointermove", e => {
+    if (!dragging) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    if (!moved && Math.hypot(dx, dy) > 5) moved = true;
+    if (moved) applyAskBtnPos(origLeft + dx, origTop + dy);
+  });
+
+  function endDrag() {
+    if (!dragging) return;
+    dragging = false;
+    if (moved) {
+      const r = floatingAskBtn.getBoundingClientRect();
+      localStorage.setItem(ASK_BTN_POS_KEY, JSON.stringify({ left: r.left, top: r.top }));
+    }
+  }
+  floatingAskBtn.addEventListener("pointerup", endDrag);
+  floatingAskBtn.addEventListener("pointercancel", endDrag);
+
+  // Click (without movement) opens the chat window
+  floatingAskBtn.addEventListener("click", e => {
+    if (moved) { moved = false; e.preventDefault(); e.stopPropagation(); return; }
+    openChatWindow();
+  });
+
+  // Keep the button inside the viewport on resize
+  window.addEventListener("resize", () => {
+    if (floatingAskBtn.style.left) {
+      const r = floatingAskBtn.getBoundingClientRect();
+      applyAskBtnPos(r.left, r.top);
+    }
+  });
+})();
+
+// -----------------------------------------------
+// Profiles (now shown inside the Team section)
 // -----------------------------------------------
 
 document.querySelectorAll(".toggle-btn").forEach(btn => {
@@ -427,7 +688,7 @@ function renderProfileCard(p) {
         <div class="profile-domains">${p.domains.map(d => `<span class="badge">${escapeHTML(d)}</span>`).join("")}</div>
         <div class="profile-progress"><label>Skill level: ${p.skillLevel}%</label><div class="progress-bar"><div class="progress-fill" style="width: ${p.skillLevel}%"></div></div></div>
         <div class="profile-gaps"><h5>Knowledge gaps</h5><ul>${p.gaps.map(g => `<li>${escapeHTML(g)}</li>`).join("")}</ul></div>
-        <button class="primary-btn" onclick="switchSection('ask')">Ask a question</button>
+        <button class="primary-btn" onclick="openAskChat()">Ask a question</button>
       </article>`;
   }
 }

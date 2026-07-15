@@ -11,21 +11,47 @@
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="brand">
-        <div class="brand-mark">ET</div>
-        <div>
-          <h1>ExperTwin</h1>
-          <p></p>
-        </div>
+        <!-- Combined logo: ET icon + ExperTwin wordmark -->
+        <svg class="brand-logo" viewBox="0 0 200 48" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ExperTwin logo">
+          <defs>
+            <linearGradient id="etIconGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#ffffff" />
+              <stop offset="1" stop-color="#dbeafe" />
+            </linearGradient>
+          </defs>
+          <!-- ET icon -->
+          <rect x="0" y="0" width="48" height="48" rx="12" fill="url(#etIconGrad)" />
+          <!-- E (three bars) -->
+          <rect x="9"  y="11"   width="14" height="5" fill="#2563eb" />
+          <rect x="9"  y="21.5" width="14" height="5" fill="#2563eb" />
+          <rect x="9"  y="32"   width="14" height="5" fill="#2563eb" />
+          <!-- T (top bar + offset stem) -->
+          <rect x="26" y="11" width="14" height="5" fill="#2563eb" />
+          <rect x="30.5" y="19" width="5" height="20" fill="#2563eb" />
+          <!-- Wordmark -->
+          <text x="58" y="31.5" font-family="Inter, -apple-system, 'Segoe UI', sans-serif"
+                font-size="20" font-weight="800" letter-spacing="-0.5" fill="#ffffff">
+            <tspan fill="#3b82f6">E</tspan>xper<tspan fill="#3b82f6">T</tspan>win
+          </text>
+        </svg>
       </div>
 
       <nav class="nav">
         <button class="nav-link active" data-section="dashboard">Dashboard</button>
-        <button class="nav-link" data-section="capture">Capture Knowledge</button>
-        <button class="nav-link" data-section="library">Knowledge Library</button>
-        <button class="nav-link" data-section="ask">Ask System</button>
-        <button class="nav-link" data-section="gaps">Knowledge Gaps</button>
-        <button class="nav-link" data-section="profiles">Profiles</button>
-        <button class="nav-link" data-section="tree">Knowledge Tree</button>
+
+        <div class="nav-group" id="knowledgeGroup">
+          <button class="nav-parent" id="knowledgeParent" aria-expanded="false">
+            <span>Knowledge</span>
+            <span class="nav-caret">▾</span>
+          </button>
+          <div class="nav-sublinks" id="knowledgeSublinks">
+            <button class="nav-link nav-sublink" data-section="capture">Capture Knowledge</button>
+            <button class="nav-link nav-sublink" data-section="library">Knowledge Library</button>
+            <button class="nav-link nav-sublink" data-section="gaps">Knowledge Gaps</button>
+            <button class="nav-link nav-sublink" data-section="tree">Knowledge Tree</button>
+          </div>
+        </div>
+
         <button class="nav-link" data-section="profile">My Profile</button>
         <button class="nav-link" data-section="team">Team</button>
       </nav>
@@ -234,36 +260,6 @@
         <div id="knowledgeList" class="knowledge-list"></div>
       </section>
 
-      <!-- Ask System -->
-      <section class="page-section" id="ask">
-        <div class="section-header">
-          <h3>Ask System</h3>
-          <p>
-            This is a mock AI interface. For now, it searches the local knowledge library and returns
-            source-style answers.
-          </p>
-        </div>
-
-        <div class="ask-layout">
-          <div class="ask-card">
-            <label for="questionInput">Ask a workplace knowledge question</label>
-            <textarea
-              id="questionInput"
-              placeholder="Example: What should I check if pump pressure drops suddenly?"
-            ></textarea>
-
-            <button class="primary-btn" id="askBtn">Generate Answer</button>
-          </div>
-
-          <div class="answer-card">
-            <h4>System Answer</h4>
-            <div id="answerBox" class="answer-box">
-              <p class="muted">Ask a question to see a source-backed response.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <!-- Knowledge Gaps -->
       <section class="page-section" id="gaps">
         <div class="section-header">
@@ -308,28 +304,6 @@
         </div>
       </section>
 
-      <!-- Profiles -->
-      <section class="page-section" id="profiles">
-        <div class="section-header">
-          <h3>Employee Profiles</h3>
-          <p id="profilesSubtitle">
-            Senior experts contribute knowledge. Junior employees consume it.
-            Each profile type is designed around its relationship to expertise.
-          </p>
-        </div>
-
-        <div class="profile-self-banner hidden" id="profileSelfBanner">
-          You are viewing your own profile. The toggle is hidden because your role is fixed.
-        </div>
-
-        <div class="profile-toggle" id="profileToggle">
-          <button class="toggle-btn active" data-role="senior">Senior Experts</button>
-          <button class="toggle-btn" data-role="junior">Junior Employees</button>
-        </div>
-
-        <div id="profileGrid" class="profile-grid"></div>
-      </section>
-
       <!-- Knowledge Tree (Visual Bookshelf Metaphor) -->
       <section class="page-section" id="tree">
         <div class="section-header">
@@ -351,14 +325,36 @@
         <div id="profileContent" class="workspace-grid"></div>
       </section>
 
-      <!-- Team -->
+      <!-- Team (includes Employee Profiles) -->
       <section class="page-section" id="team">
         <div class="section-header">
           <h3>Team</h3>
-          <p>Teammates, roles, shared knowledge-transfer tasks, shared-task progress, and communication.</p>
+          <p>Teammates, roles, shared knowledge-transfer tasks, shared-task progress, communication, and employee profiles.</p>
         </div>
 
         <div id="teamContent" class="workspace-grid"></div>
+
+        <!-- Employee Profiles sub-section (merged from the former Profiles page) -->
+        <div class="team-subsection">
+          <div class="section-header">
+            <h3>Employee Profiles</h3>
+            <p id="profilesSubtitle">
+              Senior experts contribute knowledge. Junior employees consume it.
+              Each profile type is designed around its relationship to expertise.
+            </p>
+          </div>
+
+          <div class="profile-self-banner hidden" id="profileSelfBanner">
+            You are viewing your own profile. The toggle is hidden because your role is fixed.
+          </div>
+
+          <div class="profile-toggle" id="profileToggle">
+            <button class="toggle-btn active" data-role="senior">Senior Experts</button>
+            <button class="toggle-btn" data-role="junior">Junior Employees</button>
+          </div>
+
+          <div id="profileGrid" class="profile-grid"></div>
+        </div>
       </section>
     </main>
   </div>
@@ -406,8 +402,25 @@
     </div>
   </div>
 
-  <!-- Floating Ask button -->
-  <button class="floating-ask" id="floatingAskBtn" aria-label="Go to Ask System">Ask</button>
+  <!-- Floating Ask button (draggable) -->
+  <button class="floating-ask" id="floatingAskBtn" aria-label="Open Ask ExperTwin chat">Ask</button>
+
+  <!-- Floating Chat Window -->
+  <div class="chat-window hidden" id="chatWindow" role="dialog" aria-label="Ask ExperTwin chat">
+    <div class="chat-header" id="chatHeader">
+      <span class="chat-title">Ask ExperTwin</span>
+      <div class="chat-header-btns">
+        <button id="chatMaxBtn" title="Maximize" aria-label="Maximize">⛶</button>
+        <button id="chatCloseBtn" title="Close" aria-label="Close">&times;</button>
+      </div>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-row">
+      <input type="text" id="chatInput" placeholder="Ask a question..." aria-label="Type your question" />
+      <button class="primary-btn" id="chatSendBtn">Send</button>
+    </div>
+    <div class="chat-resize-handle" id="chatResizeHandle" aria-hidden="true"></div>
+  </div>
 
   <script src="app.js"></script>
 </body>
