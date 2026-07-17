@@ -69,7 +69,6 @@ const defaultAccounts = [
 
 let knowledgeItems = loadKnowledgeItems();
 let activeProfileRole = "senior";
-let selectedLoginRole = "senior";
 let session = loadSession();
 
 // -----------------------------------------------
@@ -81,14 +80,22 @@ const sections = document.querySelectorAll(".page-section");
 const pageTitle = document.getElementById("pageTitle");
 const pageSubtitle = document.getElementById("pageSubtitle");
 
+const sidebar = document.getElementById("sidebar");
+const sidebarToggle = document.getElementById("sidebarToggle");
+
 const knowledgeGroup = document.getElementById("knowledgeGroup");
 const knowledgeParent = document.getElementById("knowledgeParent");
 
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn = document.getElementById("logoutBtn");
-const userPill = document.getElementById("userPill");
-const userAvatar = document.getElementById("userAvatar");
-const userName = document.getElementById("userName");
+const settingsBtn = document.getElementById("settingsBtn");
+
+const userHeader = document.getElementById("userHeader");
+const userHeaderAvatar = document.getElementById("userHeaderAvatar");
+const userHeaderName = document.getElementById("userHeaderName");
+const userDropdown = document.getElementById("userDropdown");
+const userDropdownAvatar = document.getElementById("userDropdownAvatar");
+const userDropdownName = document.getElementById("userDropdownName");
 const userRole = document.getElementById("userRole");
 
 const loginModal = document.getElementById("loginModal");
@@ -98,8 +105,6 @@ const loginPassword = document.getElementById("loginPassword");
 const loginError = document.getElementById("loginError");
 const modalCloseBtn = document.getElementById("modalCloseBtn");
 const loginCancelBtn = document.getElementById("loginCancelBtn");
-const roleSelector = document.getElementById("roleSelector");
-const roleOptions = document.querySelectorAll(".role-option");
 
 const profileSelfBanner = document.getElementById("profileSelfBanner");
 const profileToggle = document.getElementById("profileToggle");
@@ -111,6 +116,7 @@ const chatHeader = document.getElementById("chatHeader");
 const chatMessages = document.getElementById("chatMessages");
 const chatInput = document.getElementById("chatInput");
 const chatSendBtn = document.getElementById("chatSendBtn");
+const micBtn = document.getElementById("micBtn");
 const chatMaxBtn = document.getElementById("chatMaxBtn");
 const chatCloseBtn = document.getElementById("chatCloseBtn");
 const chatResizeHandle = document.getElementById("chatResizeHandle");
@@ -118,14 +124,12 @@ const chatResizeHandle = document.getElementById("chatResizeHandle");
 const KNOWLEDGE_SECTIONS = ["capture", "library", "gaps", "tree"];
 
 const titles = {
-  dashboard: { title: "Dashboard", subtitle: "Preserve expert knowledge before it disappears." },
+  home: { title: "Home", subtitle: "Preserve expert knowledge before it disappears." },
   capture: { title: "Capture Knowledge", subtitle: "Extract practical know-how from experienced employees." },
   library: { title: "Knowledge Library", subtitle: "Browse, search, and filter captured expertise." },
-  ask: { title: "Ask System", subtitle: "Retrieve practical guidance from captured knowledge." },
   gaps: { title: "Knowledge Gaps", subtitle: "Identify areas where critical expertise is under-documented." },
-  profiles: { title: "Employee Profiles", subtitle: "View senior experts and junior employees." },
   tree: { title: "Knowledge Tree", subtitle: "Visual representation of expertise. Domains are branches; items are books." },
-  profile: { title: "My Profile", subtitle: "Your personal workspace: calendar, tasks, team, projects, and team progress." },
+  calendar: { title: "Calendar", subtitle: "Connect your calendar to manage events." },
   team: { title: "Team", subtitle: "Teammates, roles, shared tasks, shared-task progress, communication, and employee profiles." }
 };
 
@@ -178,15 +182,25 @@ function updateAuthUI() {
   if (session) {
     const profile = defaultProfiles.find(p => p.id === session.profileId);
     if (!profile) { clearSession(); return; }
+
+    // Hide login button, show user header (top-left)
     loginBtn.classList.add("hidden");
-    userPill.classList.remove("hidden");
-    userAvatar.textContent = profile.initials;
-    userAvatar.classList.toggle("junior", profile.role === "junior");
-    userName.textContent = profile.name;
-    userRole.textContent = profile.role === "senior" ? "Senior Expert" : "Junior Employee";
+    userHeader.classList.remove("hidden");
+
+    const roleLabel = profile.role === "senior" ? "Senior Expert" : "Junior Employee";
+
+    userHeaderAvatar.textContent = profile.initials;
+    userHeaderAvatar.classList.toggle("junior", profile.role === "junior");
+    userHeaderName.textContent = profile.name;
+
+    userDropdownAvatar.textContent = profile.initials;
+    userDropdownAvatar.classList.toggle("junior", profile.role === "junior");
+    userDropdownName.textContent = profile.name;
+    userRole.textContent = roleLabel;
   } else {
     loginBtn.classList.remove("hidden");
-    userPill.classList.add("hidden");
+    userHeader.classList.add("hidden");
+    closeUserDropdown();
   }
 }
 
@@ -196,16 +210,10 @@ function openLoginModal() {
   loginError.textContent = "";
   loginUsername.value = "";
   loginPassword.value = "";
-  setLoginRole(selectedLoginRole);
   setTimeout(() => loginUsername.focus(), 50);
 }
 
 function closeLoginModal() { loginModal.classList.add("hidden"); }
-
-function setLoginRole(role) {
-  selectedLoginRole = role;
-  roleOptions.forEach(opt => opt.classList.toggle("active", opt.dataset.role === role));
-}
 
 function handleLogin(event) {
   event.preventDefault();
@@ -218,25 +226,57 @@ function handleLogin(event) {
 
   const profile = defaultProfiles.find(p => p.id === account.profileId);
   if (!profile) { loginError.textContent = "Account not linked to profile."; loginError.classList.remove("hidden"); return; }
-  if (profile.role !== selectedLoginRole) { loginError.textContent = `Select the correct role for this account.`; loginError.classList.remove("hidden"); return; }
 
   session = { username: account.username, profileId: account.profileId, role: profile.role, loggedInAt: new Date().toISOString() };
   saveSession(session);
   updateAuthUI();
   closeLoginModal();
-  switchSection("profile");
+  switchSection("home");
 }
 
 function clearSession() { session = null; saveSession(null); updateAuthUI(); }
-function handleLogout() { if (!confirm("Log out?")) return; clearSession(); switchSection("dashboard"); }
+function handleLogout() { if (!confirm("Log out?")) return; clearSession(); switchSection("home"); }
+
+function openSettings() {
+  closeUserDropdown();
+  alert("Settings panel would open here. (Placeholder for future configuration UI.)");
+}
 
 loginBtn.addEventListener("click", openLoginModal);
 logoutBtn.addEventListener("click", handleLogout);
+settingsBtn.addEventListener("click", openSettings);
 modalCloseBtn.addEventListener("click", closeLoginModal);
 loginCancelBtn.addEventListener("click", closeLoginModal);
 loginForm.addEventListener("submit", handleLogin);
 loginModal.addEventListener("click", (e) => { if (e.target === loginModal) closeLoginModal(); });
-roleOptions.forEach(opt => opt.addEventListener("click", () => setLoginRole(opt.dataset.role)));
+
+// -----------------------------------------------
+// User header dropdown
+// -----------------------------------------------
+
+function closeUserDropdown() {
+  userDropdown.classList.add("hidden");
+  userHeader.classList.remove("open");
+}
+
+userHeader.addEventListener("click", (e) => {
+  if (e.target.closest("#userDropdown")) return;
+  const willOpen = userDropdown.classList.contains("hidden");
+  if (willOpen) {
+    userDropdown.classList.remove("hidden");
+    userHeader.classList.add("open");
+  } else {
+    closeUserDropdown();
+  }
+});
+
+document.addEventListener("click", (e) => {
+  if (!userHeader.contains(e.target)) closeUserDropdown();
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeUserDropdown();
+});
 
 // -----------------------------------------------
 // Navigation
@@ -252,7 +292,6 @@ function switchSection(sectionId) {
     pageSubtitle.textContent = t.subtitle;
   }
 
-  // Knowledge dropdown: keep open for knowledge sub-sections, collapse otherwise
   const isKnowledgeSection = KNOWLEDGE_SECTIONS.includes(sectionId);
   if (knowledgeGroup) {
     knowledgeGroup.classList.toggle("open", isKnowledgeSection);
@@ -261,9 +300,8 @@ function switchSection(sectionId) {
   }
 
   if (sectionId === "library") renderKnowledgeList();
-  if (sectionId === "dashboard") updateDashboardMetrics();
+  if (sectionId === "home") updateDashboardMetrics();
   if (sectionId === "tree") renderKnowledgeTree();
-  if (sectionId === "profile") renderProfile();
   if (sectionId === "team") { renderTeam(); renderProfiles(); }
 }
 
@@ -271,11 +309,37 @@ navLinks.forEach(link => link.addEventListener("click", () => switchSection(link
 document.querySelectorAll("[data-go]").forEach(button => button.addEventListener("click", () => switchSection(button.dataset.go)));
 document.getElementById("quickCaptureBtn")?.addEventListener("click", () => switchSection("capture"));
 
-// Knowledge dropdown parent toggles open/closed without navigating
 knowledgeParent.addEventListener("click", () => {
+  if (sidebar.classList.contains("collapsed")) {
+    sidebar.classList.remove("collapsed");
+    knowledgeGroup.classList.add("open");
+    knowledgeParent.setAttribute("aria-expanded", "true");
+    return;
+  }
   const nowOpen = knowledgeGroup.classList.toggle("open");
   knowledgeParent.setAttribute("aria-expanded", String(nowOpen));
 });
+
+// -----------------------------------------------
+// Sidebar collapse
+// -----------------------------------------------
+
+sidebarToggle.addEventListener("click", () => {
+  sidebar.classList.toggle("collapsed");
+});
+
+// -----------------------------------------------
+// Calendar
+// -----------------------------------------------
+
+function connectCalendar() {
+  if (!session) {
+    alert("Please log in first.");
+    openLoginModal();
+    return;
+  }
+  alert("Calendar connection would open here.");
+}
 
 // -----------------------------------------------
 // Capture form
@@ -364,7 +428,7 @@ function deleteKnowledgeItem(id) {
 }
 
 // -----------------------------------------------
-// Ask System (knowledge retrieval — used by the floating chat)
+// Ask System
 // -----------------------------------------------
 
 function findRelevantKnowledge(question) {
@@ -395,7 +459,7 @@ function buildChatAnswerHTML(rawQuestion) {
 }
 
 // -----------------------------------------------
-// Floating Chat Window ("Ask ExperTwin")
+// Floating Chat Window
 // -----------------------------------------------
 
 const CHAT_HISTORY_KEY = "expertwinChatHistory";
@@ -448,7 +512,6 @@ function setChatRect(left, top, width, height) {
 }
 
 function setDefaultChatRect() {
-  // ~10% of viewport width, roughly square, anchored bottom-right.
   const w = Math.max(Math.round(window.innerWidth * 0.10), 240);
   const h = Math.min(Math.round(w * 1.1), window.innerHeight - 40);
   const left = Math.max(window.innerWidth - w - 24, 0);
@@ -469,7 +532,6 @@ function closeChatWindow() {
   floatingAskBtn.classList.remove("hidden");
 }
 
-// Global alias used by profile-card buttons
 function openAskChat() { openChatWindow(); }
 
 function toggleChatMaximize() {
@@ -498,7 +560,7 @@ chatInput.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventD
 chatCloseBtn.addEventListener("click", closeChatWindow);
 chatMaxBtn.addEventListener("click", toggleChatMaximize);
 
-// --- Chat window drag (by header) ---
+// --- Chat window drag ---
 (function initChatDrag() {
   let dragging = false, startX = 0, startY = 0, origLeft = 0, origTop = 0;
 
@@ -531,7 +593,7 @@ chatMaxBtn.addEventListener("click", toggleChatMaximize);
   chatHeader.addEventListener("pointercancel", stop);
 })();
 
-// --- Chat window resize (bottom-right handle) ---
+// --- Chat window resize ---
 (function initChatResize() {
   let resizing = false, startX = 0, startY = 0, origW = 0, origH = 0;
 
@@ -541,7 +603,6 @@ chatMaxBtn.addEventListener("click", toggleChatMaximize);
     startX = e.clientX; startY = e.clientY;
     const r = chatWindow.getBoundingClientRect();
     origW = r.width; origH = r.height;
-    // Pin position so resizing grows from the top-left anchor
     setChatRect(r.left, r.top, r.width, r.height);
     chatResizeHandle.setPointerCapture(e.pointerId);
     e.preventDefault();
@@ -564,6 +625,65 @@ chatMaxBtn.addEventListener("click", toggleChatMaximize);
 })();
 
 // -----------------------------------------------
+// Voice input (Web Speech API)
+// -----------------------------------------------
+
+let recognition = null;
+let isListening = false;
+
+function setupSpeechRecognition() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) return null;
+
+  const rec = new SpeechRecognition();
+  rec.lang = "en-US";
+  rec.interimResults = false;
+  rec.continuous = false;
+
+  rec.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    chatInput.value = transcript;
+    chatInput.focus();
+  };
+
+  rec.onerror = () => stopListening();
+  rec.onend = () => stopListening();
+
+  return rec;
+}
+
+function startListening() {
+  if (!recognition) {
+    alert("Speech recognition is not supported in this browser. Try Chrome, Edge, or Safari.");
+    return;
+  }
+  if (isListening) return;
+  try {
+    recognition.start();
+    isListening = true;
+    micBtn.classList.add("active");
+  } catch (e) {
+    isListening = false;
+    micBtn.classList.remove("active");
+  }
+}
+
+function stopListening() {
+  isListening = false;
+  micBtn.classList.remove("active");
+  if (recognition) {
+    try { recognition.stop(); } catch { /* already stopped */ }
+  }
+}
+
+micBtn.addEventListener("click", () => {
+  if (isListening) stopListening();
+  else startListening();
+});
+
+recognition = setupSpeechRecognition();
+
+// -----------------------------------------------
 // Draggable floating Ask button
 // -----------------------------------------------
 
@@ -580,13 +700,12 @@ chatMaxBtn.addEventListener("click", toggleChatMaximize);
     return { left, top };
   }
 
-  // Restore saved position
   const saved = localStorage.getItem(ASK_BTN_POS_KEY);
   if (saved) {
     try {
       const p = JSON.parse(saved);
       if (typeof p.left === "number" && typeof p.top === "number") applyAskBtnPos(p.left, p.top);
-    } catch { /* ignore corrupt data */ }
+    } catch { /* ignore */ }
   }
 
   let dragging = false, moved = false;
@@ -620,13 +739,11 @@ chatMaxBtn.addEventListener("click", toggleChatMaximize);
   floatingAskBtn.addEventListener("pointerup", endDrag);
   floatingAskBtn.addEventListener("pointercancel", endDrag);
 
-  // Click (without movement) opens the chat window
   floatingAskBtn.addEventListener("click", e => {
     if (moved) { moved = false; e.preventDefault(); e.stopPropagation(); return; }
     openChatWindow();
   });
 
-  // Keep the button inside the viewport on resize
   window.addEventListener("resize", () => {
     if (floatingAskBtn.style.left) {
       const r = floatingAskBtn.getBoundingClientRect();
@@ -636,7 +753,7 @@ chatMaxBtn.addEventListener("click", toggleChatMaximize);
 })();
 
 // -----------------------------------------------
-// Profiles (now shown inside the Team section)
+// Profiles (inside Team)
 // -----------------------------------------------
 
 document.querySelectorAll(".toggle-btn").forEach(btn => {
@@ -694,7 +811,7 @@ function renderProfileCard(p) {
 }
 
 // -----------------------------------------------
-// Knowledge Tree (Visual Bookshelf Metaphor)
+// Knowledge Tree
 // -----------------------------------------------
 
 function renderKnowledgeTree() {
@@ -705,7 +822,6 @@ function renderKnowledgeTree() {
     return;
   }
 
-  // Group items by domain
   const grouped = {};
   knowledgeItems.forEach(item => {
     if (!grouped[item.domain]) grouped[item.domain] = [];
@@ -725,7 +841,6 @@ function renderKnowledgeTree() {
     const items = grouped[domain];
     const side = index % 2 === 0 ? "branch-left" : "branch-right";
 
-    // Create books representing each knowledge item
     const booksHtml = items.map(item => {
       const riskClass = `risk-${item.riskLevel.toLowerCase()}`;
       return `<div class="book ${riskClass}" title="${escapeHTML(item.situation)} (${escapeHTML(item.expertName)})"></div>`;
@@ -761,7 +876,7 @@ function updateDashboardMetrics() {
 }
 
 // -----------------------------------------------
-// Profile workspace & Team
+// Team
 // -----------------------------------------------
 
 const TEAM_NAME = "Plant Knowledge Transfer Team";
@@ -800,33 +915,6 @@ function computeTeamProgress() {
 function computeSharedTaskProgress() {
   if (sharedTasks.length === 0) return 0;
   return Math.round(sharedTasks.reduce((sum, t) => sum + t.progress, 0) / sharedTasks.length);
-}
-
-function renderProfile() {
-  const container = document.getElementById("profileContent");
-  if (!session) {
-    container.innerHTML = `<div class="card panel-card span-all"><p class="muted">Log in to see your personal workspace.</p><button class="primary-btn" style="margin-top:12px" onclick="openLoginModal()">Login</button></div>`;
-    return;
-  }
-  const profile = defaultProfiles.find(p => p.id === session.profileId);
-  const data = personalData[profile.id] || { calendar: [], tasks: [], projects: [] };
-  const teammates = defaultProfiles.filter(p => p.id !== profile.id);
-  const teamProgress = computeTeamProgress();
-
-  container.innerHTML = `
-    <div class="card panel-card"><h4>📅 Calendar</h4><ul class="calendar-list">${data.calendar.map(e => `<li><span class="cal-date">${escapeHTML(e.date)}</span> ${escapeHTML(e.label)}</li>`).join("") || `<li class="muted">No events.</li>`}</ul></div>
-    <div class="card panel-card"><h4>✅ Tasks</h4><ul class="task-list">${data.tasks.map(t => `<li><label class="task-item ${t.done ? "done" : ""}"><input type="checkbox" ${t.done ? "checked" : ""} onchange="togglePersonalTask('${profile.id}','${t.id}')" />${escapeHTML(t.title)}</label></li>`).join("") || `<li class="muted">No tasks.</li>`}</ul></div>
-    <div class="card panel-card"><h4>👥 Team</h4><p class="muted" style="margin-bottom:10px">${escapeHTML(TEAM_NAME)}</p><div class="chip-row">${teammates.map(m => `<span class="member-chip ${m.role}"><span class="chip-avatar">${escapeHTML(m.initials)}</span>${escapeHTML(m.name)}</span>`).join("")}</div></div>
-    <div class="card panel-card"><h4>🗂 Projects</h4><ul class="simple-list">${data.projects.map(p => `<li>${escapeHTML(p)}</li>`).join("") || `<li class="muted">No projects.</li>`}</ul></div>
-    <div class="card panel-card span-all"><h4>📈 Progress</h4><p class="progress-note">Team knowledge transfer progress.</p><div class="progress-bar"><div class="progress-fill" style="width:${teamProgress}%"></div></div><p class="muted" style="margin-top:8px">Team progress: <strong>${teamProgress}%</strong></p></div>`;
-}
-
-function togglePersonalTask(profileId, taskId) {
-  const task = personalData[profileId]?.tasks.find(t => t.id === taskId);
-  if (!task) return;
-  task.done = !task.done;
-  localStorage.setItem("expertwinPersonal", JSON.stringify(personalData));
-  renderProfile();
 }
 
 function renderTeam() {
