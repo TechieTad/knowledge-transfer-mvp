@@ -55,12 +55,12 @@ const defaultProfiles = [
 ];
 
 const defaultAccounts = [
-  { username: "henrik.laine", password: "demo1234", profileId: "s1" },
-  { username: "marja.korhonen", password: "demo1234", profileId: "s2" },
-  { username: "timo.virtanen", password: "demo1234", profileId: "s3" },
-  { username: "aino.makela", password: "demo1234", profileId: "j1" },
-  { username: "elias.nurmi", password: "demo1234", profileId: "j2" },
-  { username: "sofia.jarvinen", password: "demo1234", profileId: "j3" }
+  { username: "henrik.laine", password: "demo1234", profileId: "s1", email: "henrik.laine@expertwin.local" },
+  { username: "marja.korhonen", password: "demo1234", profileId: "s2", email: "marja.korhonen@expertwin.local" },
+  { username: "timo.virtanen", password: "demo1234", profileId: "s3", email: "timo.virtanen@expertwin.local" },
+  { username: "aino.makela", password: "demo1234", profileId: "j1", email: "aino.makela@expertwin.local" },
+  { username: "elias.nurmi", password: "demo1234", profileId: "j2", email: "elias.nurmi@expertwin.local" },
+  { username: "sofia.jarvinen", password: "demo1234", profileId: "j3", email: "sofia.jarvinen@expertwin.local" }
 ];
 
 // -----------------------------------------------
@@ -93,9 +93,11 @@ const settingsBtn = document.getElementById("settingsBtn");
 const userHeader = document.getElementById("userHeader");
 const userHeaderAvatar = document.getElementById("userHeaderAvatar");
 const userHeaderName = document.getElementById("userHeaderName");
+const userHeaderEmail = document.getElementById("userHeaderEmail");
 const userDropdown = document.getElementById("userDropdown");
 const userDropdownAvatar = document.getElementById("userDropdownAvatar");
 const userDropdownName = document.getElementById("userDropdownName");
+const userDropdownEmail = document.getElementById("userDropdownEmail");
 const userRole = document.getElementById("userRole");
 
 const loginModal = document.getElementById("loginModal");
@@ -183,19 +185,22 @@ function updateAuthUI() {
     const profile = defaultProfiles.find(p => p.id === session.profileId);
     if (!profile) { clearSession(); return; }
 
-    // Hide login button, show user header (top-left)
+    const account = loadAccounts().find(a => a.username === session.username);
+    const email = session.email || account?.email || `${session.username}@expertwin.local`;
+    const roleLabel = profile.role === "senior" ? "Senior Expert" : "Junior Employee";
+
     loginBtn.classList.add("hidden");
     userHeader.classList.remove("hidden");
-
-    const roleLabel = profile.role === "senior" ? "Senior Expert" : "Junior Employee";
 
     userHeaderAvatar.textContent = profile.initials;
     userHeaderAvatar.classList.toggle("junior", profile.role === "junior");
     userHeaderName.textContent = profile.name;
+    userHeaderEmail.textContent = email;
 
     userDropdownAvatar.textContent = profile.initials;
     userDropdownAvatar.classList.toggle("junior", profile.role === "junior");
     userDropdownName.textContent = profile.name;
+    userDropdownEmail.textContent = email;
     userRole.textContent = roleLabel;
   } else {
     loginBtn.classList.remove("hidden");
@@ -227,7 +232,13 @@ function handleLogin(event) {
   const profile = defaultProfiles.find(p => p.id === account.profileId);
   if (!profile) { loginError.textContent = "Account not linked to profile."; loginError.classList.remove("hidden"); return; }
 
-  session = { username: account.username, profileId: account.profileId, role: profile.role, loggedInAt: new Date().toISOString() };
+  session = {
+    username: account.username,
+    profileId: account.profileId,
+    role: profile.role,
+    email: account.email || `${account.username}@expertwin.local`,
+    loggedInAt: new Date().toISOString()
+  };
   saveSession(session);
   updateAuthUI();
   closeLoginModal();
@@ -257,16 +268,33 @@ loginModal.addEventListener("click", (e) => { if (e.target === loginModal) close
 function closeUserDropdown() {
   userDropdown.classList.add("hidden");
   userHeader.classList.remove("open");
+  userHeader.setAttribute("aria-expanded", "false");
 }
 
-userHeader.addEventListener("click", (e) => {
-  if (e.target.closest("#userDropdown")) return;
+function toggleUserDropdown() {
+  if (sidebar.classList.contains("collapsed")) {
+    sidebar.classList.remove("collapsed");
+  }
+  
   const willOpen = userDropdown.classList.contains("hidden");
   if (willOpen) {
     userDropdown.classList.remove("hidden");
     userHeader.classList.add("open");
+    userHeader.setAttribute("aria-expanded", "true");
   } else {
     closeUserDropdown();
+  }
+}
+
+userHeader.addEventListener("click", (e) => {
+  if (e.target.closest("#userDropdown")) return;
+  toggleUserDropdown();
+});
+
+userHeader.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    toggleUserDropdown();
   }
 });
 
@@ -325,6 +353,7 @@ knowledgeParent.addEventListener("click", () => {
 // -----------------------------------------------
 
 sidebarToggle.addEventListener("click", () => {
+  closeUserDropdown();
   sidebar.classList.toggle("collapsed");
 });
 

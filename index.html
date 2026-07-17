@@ -45,14 +45,42 @@
         </button>
       </div>
 
+      <!-- Logged-in account profile -->
+      <div class="user-header hidden" id="userHeader" role="button" tabindex="0" aria-haspopup="menu" aria-expanded="false">
+        <span class="user-avatar" id="userHeaderAvatar" aria-hidden="true">--</span>
+        <div class="user-header-info">
+          <strong id="userHeaderName">User</strong>
+          <span class="user-header-email" id="userHeaderEmail">user@expertwin.local</span>
+        </div>
+        <span class="user-header-caret" aria-hidden="true">▾</span>
+
+        <!-- Account popover (Notion-style) -->
+        <div class="user-dropdown hidden" id="userDropdown" role="menu">
+          <div class="user-dropdown-header">
+            <span class="user-avatar large" id="userDropdownAvatar" aria-hidden="true">--</span>
+            <div class="user-dropdown-meta">
+              <strong id="userDropdownName">User</strong>
+              <span id="userDropdownEmail">user@expertwin.local</span>
+              <span id="userRole">Role</span>
+            </div>
+          </div>
+          <div class="user-dropdown-divider"></div>
+          <button class="dropdown-item" id="settingsBtn" type="button" role="menuitem">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+            <span>Settings</span>
+          </button>
+          <div class="user-dropdown-divider"></div>
+          <button class="logout-btn" id="logoutBtn" type="button" role="menuitem">Log out</button>
+        </div>
+      </div>
+
       <nav class="nav">
         <!-- Home -->
         <button class="nav-link active" data-section="home" title="Home">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M3 10.5 12 3l9 7.5" />
-            <path d="M5 9.5V21h14V9.5" />
-            <path d="M10 21v-6h4v6" />
-          </svg>
+          <img class="nav-icon" src="Home.png" alt="" aria-hidden="true" />
           <span class="nav-label">Home</span>
         </button>
 
@@ -60,14 +88,7 @@
         <div class="nav-group" id="knowledgeGroup">
           <button class="nav-parent" id="knowledgeParent" aria-expanded="false" title="Knowledge">
             <span class="nav-parent-main">
-              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-                <circle cx="5" cy="6" r="2" />
-                <circle cx="5" cy="18" r="2" />
-                <circle cx="12" cy="12" r="2.5" />
-                <circle cx="19" cy="6" r="2" />
-                <circle cx="19" cy="18" r="2" />
-                <path d="M6.7 7.3 10 10.5M6.7 16.7 10 13.5M17.3 7.3 14 10.5M17.3 16.7 14 13.5" />
-              </svg>
+              <img class="nav-icon" src="Knowledge.png" alt="" aria-hidden="true" />
               <span class="nav-label">Knowledge</span>
             </span>
             <span class="nav-caret">▾</span>
@@ -82,24 +103,13 @@
 
         <!-- Calendar -->
         <button class="nav-link" data-section="calendar" title="Calendar">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="3" y="5" width="18" height="16" rx="2" />
-            <path d="M8 3v4M16 3v4M3 10h18" />
-            <path d="m9 15.5 2 2 4-4" />
-          </svg>
+          <img class="nav-icon" src="Calendar.png" alt="" aria-hidden="true" />
           <span class="nav-label">Calendar</span>
         </button>
 
         <!-- Team -->
         <button class="nav-link" data-section="team" title="Team">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="7" r="2.6" />
-            <path d="M7.5 20c.4-3.2 2.2-5 4.5-5s4.1 1.8 4.5 5" />
-            <circle cx="5" cy="9" r="2" />
-            <path d="M1.8 18.5c.3-2.6 1.7-4 3.4-4" />
-            <circle cx="19" cy="9" r="2" />
-            <path d="M22.2 18.5c-.3-2.6-1.7-4-3.4-4" />
-          </svg>
+          <img class="nav-icon" src="Team.png" alt="" aria-hidden="true" />
           <span class="nav-label">Team</span>
         </button>
       </nav>
@@ -115,37 +125,6 @@
       <!-- Top bar -->
       <header class="topbar">
         <div class="topbar-left">
-          <!-- User info at top-left (Notion-style), visible only when logged in -->
-          <div class="user-header hidden" id="userHeader">
-            <span class="user-avatar" id="userHeaderAvatar">--</span>
-            <div class="user-header-info">
-              <strong id="userHeaderName">User</strong>
-              <span class="user-header-caret" aria-hidden="true">▾</span>
-            </div>
-
-            <!-- Account popover (Notion-style) -->
-            <div class="user-dropdown hidden" id="userDropdown">
-              <div class="user-dropdown-header">
-                <span class="user-avatar large" id="userDropdownAvatar">--</span>
-                <div class="user-dropdown-meta">
-                  <strong id="userDropdownName">User</strong>
-                  <span id="userRole">Role</span>
-                </div>
-              </div>
-              <div class="user-dropdown-divider"></div>
-              <button class="dropdown-item" id="settingsBtn" type="button">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <circle cx="12" cy="12" r="3" />
-                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-                </svg>
-                <span>Settings</span>
-              </button>
-              <div class="user-dropdown-divider"></div>
-              <button class="logout-btn" id="logoutBtn" type="button">Log out</button>
-            </div>
-          </div>
-
-          <!-- Page title block -->
           <div class="page-title-block">
             <h2 id="pageTitle">Home</h2>
             <p id="pageSubtitle">Preserve expert knowledge before it disappears.</p>
