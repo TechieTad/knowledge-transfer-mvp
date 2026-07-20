@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ExperTwin — Knowledge Transfer MVP</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="d3.v7.min.js"></script>
 </head>
 <body>
   <div class="app-shell">
@@ -97,7 +98,7 @@
             <button class="nav-link nav-sublink" data-section="capture" title="Capture Knowledge">Capture Knowledge</button>
             <button class="nav-link nav-sublink" data-section="library" title="Knowledge Library">Knowledge Library</button>
             <button class="nav-link nav-sublink" data-section="gaps" title="Knowledge Gaps">Knowledge Gaps</button>
-            <button class="nav-link nav-sublink" data-section="tree" title="Knowledge Tree">Knowledge Tree</button>
+            <button class="nav-link nav-sublink" data-section="graph" title="Knowledge Graph">Knowledge Graph</button>
           </div>
         </div>
 
@@ -356,15 +357,20 @@
         </div>
       </section>
 
-      <!-- Knowledge Tree -->
-      <section class="page-section" id="tree">
+      <!-- Knowledge Graph -->
+      <section class="page-section" id="graph">
         <div class="section-header">
-          <h3>Knowledge Tree</h3>
+          <h3>Knowledge Graph</h3>
           <p>
-            A visual representation of captured expertise. Domains form the branches, and individual knowledge items are the books resting on them.
+            Interactive map of people, knowledge, and connections.
           </p>
         </div>
-        <div id="knowledgeTree" class="tree-container"></div>
+        <div id="knowledgeGraph" class="graph-container">
+          <div class="graph-zoom-controls">
+            <button id="graphZoomIn" aria-label="Zoom in">+</button>
+            <button id="graphZoomOut" aria-label="Zoom out">−</button>
+          </div>
+        </div>
       </section>
 
       <!-- Calendar -->

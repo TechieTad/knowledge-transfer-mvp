@@ -123,14 +123,14 @@ const chatMaxBtn = document.getElementById("chatMaxBtn");
 const chatCloseBtn = document.getElementById("chatCloseBtn");
 const chatResizeHandle = document.getElementById("chatResizeHandle");
 
-const KNOWLEDGE_SECTIONS = ["capture", "library", "gaps", "tree"];
+const KNOWLEDGE_SECTIONS = ["capture", "library", "gaps", "graph"];
 
 const titles = {
   home: { title: "Home", subtitle: "Preserve expert knowledge before it disappears." },
   capture: { title: "Capture Knowledge", subtitle: "Extract practical know-how from experienced employees." },
   library: { title: "Knowledge Library", subtitle: "Browse, search, and filter captured expertise." },
   gaps: { title: "Knowledge Gaps", subtitle: "Identify areas where critical expertise is under-documented." },
-  tree: { title: "Knowledge Tree", subtitle: "Visual representation of expertise. Domains are branches; items are books." },
+  graph: { title: "Knowledge Graph", subtitle: "Interactive map of people, knowledge, and connections." },
   calendar: { title: "Calendar", subtitle: "Connect your calendar to manage events." },
   team: { title: "Team", subtitle: "Teammates, roles, shared tasks, shared-task progress, communication, and employee profiles." }
 };
@@ -329,7 +329,7 @@ function switchSection(sectionId) {
 
   if (sectionId === "library") renderKnowledgeList();
   if (sectionId === "home") updateDashboardMetrics();
-  if (sectionId === "tree") renderKnowledgeTree();
+  if (sectionId === "graph") renderKnowledgeGraph();
   if (sectionId === "team") { renderTeam(); renderProfiles(); }
 }
 
@@ -840,54 +840,238 @@ function renderProfileCard(p) {
 }
 
 // -----------------------------------------------
-// Knowledge Tree
+// Knowledge Graph (D3.js Force-Directed Graph)
 // -----------------------------------------------
 
-function renderKnowledgeTree() {
-  const container = document.getElementById("knowledgeTree");
+function renderKnowledgeGraph() {
+  const container = document.getElementById("knowledgeGraph");
+  // Preserve zoom controls and reset everything else
+  container.innerHTML = `<div class="graph-zoom-controls"><button id="graphZoomIn" aria-label="Zoom in">+</button><button id="graphZoomOut" aria-label="Zoom out">−</button></div>`;
+  
+  const width = container.clientWidth || 800;
+  const height = 500;
+  
+  const svg = d3.select(container).append("svg")
+    .attr("width", "100%")
+    .attr("height", height)
+    .attr("viewBox", [0, 0, width, height]);
+    
+  const g = svg.append("g");
 
-  if (knowledgeItems.length === 0) {
-    container.innerHTML = `<p class="tree-empty">No knowledge items to display. Capture some expertise first.</p>`;
-    return;
+  // Zoom behavior
+  const zoom = d3.zoom()
+    .scaleExtent([0.2, 3])
+    .on("zoom", (event) => {
+      g.attr("transform", event.transform);
+    });
+  svg.call(zoom);
+  
+  // Zoom Controls
+  d3.select("#graphZoomIn").on("click", () => svg.transition().duration(200).call(zoom.scaleBy, 1.2));
+  d3.select("#graphZoomOut").on("click", () => svg.transition().duration(200).call(zoom.scaleBy, 0.8));
+  
+  // Tooltip setup
+  const tooltip = d3.select(container).append("div")
+    .attr("class", "graph-tooltip")
+    .style("visibility", "hidden");
+    
+  const nodes = [];
+  const nodeMap = new Map();
+  
+  function addNode(id, type, label, data) {
+    if (!nodeMap.has(id)) {
+      const node = { id, type, label, data };
+      nodes.push(node);
+      nodeMap.set(id, node);
+    }
+    return nodeMap.get(id);
   }
-
-  const grouped = {};
+  
+  // 1. Add Team Node
+  const teamNode = addNode("team", "team", TEAM_NAME, {});
+  
+  // 2. Add Users
+  defaultProfiles.forEach(p => addNode(`user_${p.id}`, "user", p.name, p));
+  
+  // 3. Add Domains
+  const domains = new Set();
+  defaultProfiles.forEach(p => p.domains.forEach(d => domains.add(d)));
+  knowledgeItems.forEach(item => domains.add(item.domain));
+  domains.forEach(d => addNode(`domain_${d}`, "domain", d, { domain: d }));
+  
+  // 4. Add Knowledge Items
+  knowledgeItems.forEach(item => addNode(`ki_${item.id}`, "knowledgeItem", item.situation, item));
+  
+  // 5. Add Projects
+  Object.keys(personalData).forEach(profileId => {
+    const data = personalData[profileId];
+    if (data && data.projects) {
+      data.projects.forEach(proj => addNode(`proj_${profileId}_${proj}`, "project", proj, { project: proj }));
+    }
+  });
+  
+  // 6. Add Shared Tasks
+  sharedTasks.forEach(task => addNode(`task_${task.id}`, "sharedTask", task.title, task));
+  
+  // Build Edges (Links)
+  const links = [];
+  function addLink(source, target, type) {
+    if (source && target) {
+      links.push({ source: source.id, target: target.id, type });
+    }
+  }
+  
+  defaultProfiles.forEach(user => {
+    const userNode = nodeMap.get(`user_${user.id}`);
+    // User <-> Team
+    addLink(userNode, teamNode, "user-team");
+    
+    // User <-> Domain
+    user.domains.forEach(d => {
+      addLink(userNode, nodeMap.get(`domain_${d}`), "user-domain");
+    });
+    
+    // User <-> Knowledge Item
+    knowledgeItems.forEach(item => {
+      if (item.expertName === user.name) {
+        addLink(userNode, nodeMap.get(`ki_${item.id}`), "user-ki");
+      }
+    });
+    
+    // User <-> Shared Task
+    sharedTasks.forEach(task => {
+      const firstName = user.name.split(' ')[0];
+      if (task.pairing.includes(user.name) || task.pairing.includes(firstName)) {
+        addLink(userNode, nodeMap.get(`task_${task.id}`), "user-task");
+      }
+    });
+    
+    // User <-> Project
+    const pData = personalData[user.id];
+    if (pData && pData.projects) {
+      pData.projects.forEach(proj => {
+        addLink(userNode, nodeMap.get(`proj_${user.id}_${proj}`), "user-project");
+      });
+    }
+  });
+  
+  // Knowledge Item <-> Domain
   knowledgeItems.forEach(item => {
-    if (!grouped[item.domain]) grouped[item.domain] = [];
-    grouped[item.domain].push(item);
+    addLink(nodeMap.get(`ki_${item.id}`), nodeMap.get(`domain_${item.domain}`), "ki-domain");
   });
 
-  const domainOrder = ["Operations", "Maintenance", "Safety", "Engineering", "Onboarding"];
-  const sortedDomains = Object.keys(grouped).sort((a, b) => {
-    const ai = domainOrder.indexOf(a);
-    const bi = domainOrder.indexOf(b);
-    return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+  // Simulation
+  const simulation = d3.forceSimulation(nodes)
+    .force("link", d3.forceLink(links).id(d => d.id).distance(90))
+    .force("charge", d3.forceManyBody().strength(-280))
+    .force("center", d3.forceCenter(width / 2, height / 2))
+    .force("collide", d3.forceCollide().radius(35));
+    
+  const link = g.append("g")
+    .attr("stroke", "#cbd5e1")
+    .attr("stroke-width", 1.5)
+    .selectAll("line")
+    .data(links)
+    .enter().append("line");
+    
+  const node = g.append("g")
+    .selectAll(".node")
+    .data(nodes)
+    .enter().append("g")
+    .attr("class", "node")
+    .call(d3.drag()
+      .on("start", dragstarted)
+      .on("drag", dragged)
+      .on("end", dragended));
+      
+  // Node Click & Tooltip Display
+  node.on("click", (event, d) => {
+    event.stopPropagation();
+    let html = `<strong>${escapeHTML(d.label)}</strong>`;
+    if (d.type === "user") {
+      html += `<br>Role: ${escapeHTML(d.data.role)}<br>Title: ${escapeHTML(d.data.title)}`;
+    } else if (d.type === "domain") {
+      html += `<br>Domain`;
+    } else if (d.type === "knowledgeItem") {
+      html += `<br>Expert: ${escapeHTML(d.data.expertName)}<br>Risk: ${escapeHTML(d.data.riskLevel)}<br>Advice: ${escapeHTML(d.data.realWorldAdvice)}`;
+    } else if (d.type === "project") {
+      html += `<br>Project`;
+    } else if (d.type === "team") {
+      html += `<br>Team`;
+    } else if (d.type === "sharedTask") {
+      html += `<br>Pairing: ${escapeHTML(d.data.pairing)}<br>Progress: ${d.data.progress}%`;
+    }
+    tooltip.html(html).style("visibility", "visible");
+    
+    const rect = container.getBoundingClientRect();
+    tooltip.style("top", (event.clientY - rect.top + 10) + "px")
+           .style("left", (event.clientX - rect.left + 10) + "px");
+  });
+  
+  svg.on("click", () => {
+    tooltip.style("visibility", "hidden");
+  });
+  
+  // Draw Shapes & Labels
+  node.each(function(d) {
+    const el = d3.select(this);
+    if (d.type === "user") {
+      el.append("circle")
+        .attr("r", 8)
+        .attr("fill", d.data.role === "senior" ? "#2563eb" : "#16a34a");
+    } else if (d.type === "domain") {
+      el.append("rect")
+        .attr("x", -8).attr("y", -8).attr("width", 16).attr("height", 16)
+        .attr("fill", "#f97316");
+    } else if (d.type === "knowledgeItem") {
+      const riskColors = { low: "#16a34a", medium: "#d97706", high: "#dc2626", critical: "#7e22ce" };
+      el.append("polygon")
+        .attr("points", "0,-10 10,0 0,10 -10,0")
+        .attr("fill", riskColors[d.data.riskLevel.toLowerCase()] || "#64748b");
+    } else if (d.type === "project") {
+      el.append("polygon")
+        .attr("points", "0,-9 9,7 -9,7")
+        .attr("fill", "#38bdf8");
+    } else if (d.type === "team") {
+      el.append("polygon")
+        .attr("points", "0,-15 4.5,-4.5 15,-4.5 6,3 9,15 0,8 -9,15 -6,3 -15,-4.5 -4.5,-4.5")
+        .attr("fill", "#0f172a");
+    } else if (d.type === "sharedTask") {
+      el.append("circle")
+        .attr("r", 6)
+        .attr("fill", "#e5e7eb")
+        .attr("stroke", "#94a3b8");
+    }
+  });
+  
+  node.append("text")
+    .text(d => d.label)
+    .attr("x", 14)
+    .attr("y", 4)
+    .style("font-size", "11px")
+    .style("font-family", "Inter, sans-serif")
+    .style("fill", "#18202f");
+    
+  simulation.on("tick", () => {
+    link
+      .attr("x1", d => d.source.x)
+      .attr("y1", d => d.source.y)
+      .attr("x2", d => d.target.x)
+      .attr("y2", d => d.target.y);
+    node.attr("transform", d => `translate(${d.x},${d.y})`);
   });
 
-  let html = `<div class="visual-tree"><div class="tree-trunk"></div><div class="tree-branches-container">`;
-
-  sortedDomains.forEach((domain, index) => {
-    const items = grouped[domain];
-    const side = index % 2 === 0 ? "branch-left" : "branch-right";
-
-    const booksHtml = items.map(item => {
-      const riskClass = `risk-${item.riskLevel.toLowerCase()}`;
-      return `<div class="book ${riskClass}" title="${escapeHTML(item.situation)} (${escapeHTML(item.expertName)})"></div>`;
-    }).join("");
-
-    html += `
-      <div class="tree-branch-outer ${side}">
-        <div class="branch-content">
-          <div class="branch-label">${escapeHTML(domain)} (${items.length})</div>
-          <div class="book-cluster">${booksHtml}</div>
-        </div>
-        <div class="visual-branch-line"></div>
-      </div>
-    `;
-  });
-
-  html += `</div></div>`;
-  container.innerHTML = html;
+  function dragstarted(event, d) {
+    if (!event.active) simulation.alphaTarget(0.3).restart();
+    d.fx = d.x; d.fy = d.y;
+  }
+  function dragged(event, d) {
+    d.fx = event.x; d.fy = event.y;
+  }
+  function dragended(event, d) {
+    if (!event.active) simulation.alphaTarget(0);
+    d.fx = null; d.fy = null;
+  }
 }
 
 // -----------------------------------------------
@@ -992,3 +1176,4 @@ function escapeHTML(value) {
 updateAuthUI();
 renderKnowledgeList();
 updateDashboardMetrics();
+
