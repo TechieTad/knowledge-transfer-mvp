@@ -751,3 +751,111 @@ textarea { min-height: 110px; resize: vertical; }
   .topbar { flex-direction: column; align-items: flex-start; }
   .auth-cluster { width: 100%; }
 }
+
+/* =========================================================
+   LIGHT-BLUE SIDEBAR THEME
+   Paste at the end of style.css
+   ========================================================= */
+
+.sidebar {
+  background: #dbeafe;
+  color: #0f172a;
+}
+
+/* Keep the white parts of the existing logo visible */
+.sidebar .brand-logo {
+  filter: drop-shadow(0 1px 1px rgba(15, 23, 42, 0.45));
+}
+
+/* Collapse button */
+.sidebar .sidebar-toggle {
+  background: rgba(30, 64, 175, 0.1);
+  color: #1e3a8a;
+}
+
+.sidebar .sidebar-toggle:hover {
+  background: rgba(30, 64, 175, 0.18);
+  color: #172554;
+}
+
+/* Account profile */
+.sidebar .user-header {
+  color: #0f172a;
+}
+
+.sidebar .user-header:hover,
+.sidebar .user-header:focus-visible,
+.sidebar .user-header.open {
+  background: rgba(255, 255, 255, 0.58);
+  border-color: rgba(37, 99, 235, 0.16);
+}
+
+.sidebar .user-header-info strong {
+  color: #0f172a;
+}
+
+.sidebar .user-header-email,
+.sidebar .user-header-caret {
+  color: #475569;
+}
+
+/* Main navigation */
+.sidebar .nav-link,
+.sidebar .nav-parent {
+  color: #1e3a8a;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-parent:hover {
+  background: rgba(255, 255, 255, 0.62);
+  color: #172554;
+}
+
+.sidebar .nav-link.active {
+  background: #ffffff;
+  color: #172554;
+  box-shadow: 0 2px 10px rgba(30, 64, 175, 0.12);
+}
+
+.sidebar .nav-parent.active {
+  background: #bfdbfe;
+  color: #172554;
+}
+
+/* Make image-based navigation icons darker */
+.sidebar .nav-icon {
+  filter: brightness(0) saturate(100%) opacity(0.72);
+}
+
+.sidebar .nav-link.active .nav-icon,
+.sidebar .nav-link:hover .nav-icon,
+.sidebar .nav-parent:hover .nav-icon,
+.sidebar .nav-parent.active .nav-icon {
+  filter: brightness(0) saturate(100%) opacity(0.95);
+}
+
+/* Knowledge submenu */
+.sidebar .nav-sublinks {
+  border-left-color: rgba(30, 64, 175, 0.22);
+}
+
+.sidebar .nav-sublink {
+  color: #1e40af;
+}
+
+.sidebar .nav-sublink:hover {
+  color: #172554;
+}
+
+/* Footer */
+.sidebar .sidebar-footer {
+  border-top-color: rgba(30, 64, 175, 0.18);
+}
+
+.sidebar .sidebar-footer p {
+  color: #172554;
+}
+
+.sidebar .sidebar-footer span {
+  color: #475569;
+}
